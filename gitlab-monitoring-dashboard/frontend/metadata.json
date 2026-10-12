@@ -1,0 +1,6 @@
+{
+  "name": "Pipeline Monitoring",
+  "description": "Enterprise GitLab CI/CD operational pipeline monitoring dashboard for tracking running, failed, and recent executions across projects.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
