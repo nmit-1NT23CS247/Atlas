@@ -1,0 +1,6 @@
+{
+  "name": "GitLab CI/CD Build & Release Hub",
+  "description": "Build, Stable & Release Management Dashboard for GitLab CI/CD workflows, build tracking, stable promotion, and code signing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
