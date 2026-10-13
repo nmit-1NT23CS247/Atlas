@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session, selectinload
 
@@ -59,6 +60,19 @@ def create_app(database_url: str | None = None) -> FastAPI:
             yield session
 
     app = FastAPI(title="GitLab Monitoring API", version=settings.version)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(_: Request, exc: RequestValidationError):

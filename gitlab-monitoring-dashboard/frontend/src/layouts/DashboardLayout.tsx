@@ -3,15 +3,23 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/navigation/Sidebar';
 import { Topbar } from '../components/navigation/Topbar';
 
+export interface DashboardOutletContext {
+  refreshKey: number;
+  lastRefreshed: Date;
+}
+
 export const DashboardLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
+
   const handleRefresh = () => {
     setIsRefreshing(true);
+    setRefreshKey((k) => k + 1);
+    setLastRefreshed(new Date());
     setTimeout(() => {
-      setLastRefreshed(new Date());
       setIsRefreshing(false);
     }, 400);
   };
@@ -37,7 +45,7 @@ export const DashboardLayout: React.FC = () => {
           />
 
           <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1500px] w-full mx-auto">
-            <Outlet />
+            <Outlet context={{ refreshKey, lastRefreshed } satisfies DashboardOutletContext} />
           </main>
         </div>
       </div>

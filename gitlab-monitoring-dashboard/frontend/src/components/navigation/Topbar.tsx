@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { pipelineService } from '../../services/pipelineService';
 
+import { Pipeline } from '../../types/pipeline';
+
 export interface TopbarProps {
   onOpenMobileMenu: () => void;
   onRefresh: () => void;
@@ -26,6 +28,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   const navigate = useNavigate();
   const [globalSearch, setGlobalSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+  const [matchingPipelines, setMatchingPipelines] = useState<Pipeline[]>([]);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,9 +44,23 @@ export const Topbar: React.FC<TopbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const matchingPipelines = globalSearch.trim()
-    ? pipelineService.getPipelines({ search: globalSearch }).slice(0, 4)
-    : [];
+  useEffect(() => {
+    const term = globalSearch.trim();
+    if (!term) {
+      setMatchingPipelines([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const response = await pipelineService.getPipelines({ search: term, pageSize: 4 });
+        setMatchingPipelines(response.items);
+      } catch {
+        setMatchingPipelines([]);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [globalSearch]);
 
   return (
     <header className="sticky top-0 z-20 h-15 bg-white/90 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
@@ -131,9 +148,9 @@ export const Topbar: React.FC<TopbarProps> = ({
             )}
           </div>
 
-          {/* Demo Data Indicator */}
-          <span className="text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md">
-            Demo Data
+          {/* API Connection Indicator */}
+          <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-1 rounded-md">
+            API Connected
           </span>
 
           {/* Refresh Button */}

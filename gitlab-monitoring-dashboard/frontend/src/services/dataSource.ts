@@ -52,10 +52,11 @@ class DataSource {
         .filter(
           (p) =>
             p.finishedAt !== null &&
-            Number.isFinite(p.durationSeconds) &&
+            p.durationSeconds !== null &&
+            p.durationSeconds !== undefined &&
             p.durationSeconds >= 0
         )
-        .map((p) => p.durationSeconds);
+        .map((p) => p.durationSeconds as number);
       const totalDuration = completedDurations.reduce(
         (acc, duration) => acc + duration,
         0
@@ -121,10 +122,11 @@ class DataSource {
       .filter(
         (p) =>
           p.finishedAt !== null &&
-          Number.isFinite(p.durationSeconds) &&
+          p.durationSeconds !== null &&
+          p.durationSeconds !== undefined &&
           p.durationSeconds >= 0
       )
-      .map((p) => p.durationSeconds);
+      .map((p) => p.durationSeconds as number);
     const totalDuration = completedDurations.reduce((sum, duration) => sum + duration, 0);
     const avgDurationSeconds =
       completedDurations.length > 0
@@ -215,7 +217,10 @@ class DataSource {
       else if (pendingJobs > 0) status = 'pending';
       else if (passedJobs === totalJobs) status = 'success';
 
-      const durationSeconds = stageJobs.reduce((sum, j) => sum + j.durationSeconds, 0);
+      const durationSeconds = stageJobs.reduce(
+        (sum, j) => sum + (j.durationSeconds || 0),
+        0
+      );
 
       groups.push({
         name: stageName,

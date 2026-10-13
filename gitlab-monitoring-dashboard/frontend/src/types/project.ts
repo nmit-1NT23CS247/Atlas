@@ -11,6 +11,31 @@ export interface Project {
   description: string;
 }
 
+export interface LatestPipeline {
+  id: number;
+  status: 'success' | 'failed' | 'running' | 'canceled' | 'pending' | 'skipped';
+  startedAt: string;
+  ref: string;
+}
+
+export interface ProjectStatsSummary {
+  totalPipelines: number;
+  successCount: number;
+  failedCount: number;
+  runningCount: number;
+  successRate: number;
+  avgDurationSeconds: number;
+  latestPipeline: LatestPipeline | null;
+}
+
+export interface ProjectWithStats extends Project {
+  stats: ProjectStatsSummary | null;
+}
+
+export interface ProjectsResponse {
+  items: ProjectWithStats[];
+}
+
 export interface ProjectStats {
   project: Project;
   totalPipelines: number;
@@ -19,10 +44,5 @@ export interface ProjectStats {
   runningCount: number;
   successRate: number;
   avgDurationSeconds: number;
-  latestPipeline?: {
-    id: number;
-    status: 'success' | 'failed' | 'running' | 'canceled' | 'pending' | 'skipped';
-    startedAt: string;
-    ref: string;
-  };
+  latestPipeline?: LatestPipeline | null;
 }

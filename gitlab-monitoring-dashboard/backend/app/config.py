@@ -6,10 +6,10 @@ import os
 class Settings:
     database_url: str = os.getenv(
         "DATABASE_URL",
-        "sqlite:///./backend/dashboard.db",
+       "sqlite:///./dashboard.db",
     )
     service_name: str = "gitlab-monitoring-api"
-    version: str = "0.1.0"
+    version: str = "1.0.0"
 
 
 settings = Settings()

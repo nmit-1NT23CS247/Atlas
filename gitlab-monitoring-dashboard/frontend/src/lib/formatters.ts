@@ -1,4 +1,5 @@
-export function formatDuration(seconds: number): string {
+export function formatDuration(seconds: number | null | undefined): string {
+  if (seconds === null || seconds === undefined) return '—';
   if (seconds < 0) return '0s';
   if (seconds === 0) return '0s';
 
