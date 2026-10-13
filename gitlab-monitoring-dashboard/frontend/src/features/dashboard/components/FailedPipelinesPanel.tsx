@@ -2,15 +2,17 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
-import { Pipeline } from '../../../types/pipeline';
+import { Pipeline, RecentFailure } from '../../../types/pipeline';
 import { Job } from '../../../types/job';
 import { ArrowRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export interface FailedPipelinesPanelProps {
-  failures: {
-    pipeline: Pipeline;
-    failedJob?: Job;
-  }[];
+  failures:
+    | RecentFailure[]
+    | {
+        pipeline: Pipeline;
+        failedJob?: Job | null;
+      }[];
 }
 
 export const FailedPipelinesPanel: React.FC<FailedPipelinesPanelProps> = ({

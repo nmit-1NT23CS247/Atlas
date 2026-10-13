@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pipeline } from '../../../types/pipeline';
+import { Pipeline, RecentPipeline } from '../../../types/pipeline';
 import { StatusBadge } from '../../../components/data-display/StatusBadge';
 import { Button } from '../../../components/ui/Button';
 import { Tooltip } from '../../../components/ui/Tooltip';
@@ -9,7 +9,7 @@ import { formatRelativeTime, formatDateTime } from '../../../lib/date';
 import { ArrowRight, GitCommit } from 'lucide-react';
 
 export interface RecentPipelinesTableProps {
-  pipelines: Pipeline[];
+  pipelines: (Pipeline | RecentPipeline)[];
 }
 
 export const RecentPipelinesTable: React.FC<RecentPipelinesTableProps> = ({
@@ -62,15 +62,21 @@ export const RecentPipelinesTable: React.FC<RecentPipelinesTableProps> = ({
                 </span>
               </td>
               <td className="py-2.5 px-3.5 max-w-[220px]">
-                <Tooltip content={`Full SHA: ${pipeline.commitSha}`}>
-                  <span className="inline-flex items-center gap-1 font-mono text-[11px] text-slate-600 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded">
-                    <GitCommit className="w-3 h-3 text-slate-400" />
-                    {formatCommitSha(pipeline.commitSha)}
-                  </span>
-                </Tooltip>
-                <span className="ml-1.5 text-slate-500 truncate hidden md:inline text-[11px]">
-                  {pipeline.commitTitle}
-                </span>
+                {pipeline.commitSha ? (
+                  <>
+                    <Tooltip content={`Full SHA: ${pipeline.commitSha}`}>
+                      <span className="inline-flex items-center gap-1 font-mono text-[11px] text-slate-600 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded">
+                        <GitCommit className="w-3 h-3 text-slate-400" />
+                        {formatCommitSha(pipeline.commitSha)}
+                      </span>
+                    </Tooltip>
+                    <span className="ml-1.5 text-slate-500 truncate hidden md:inline text-[11px]">
+                      {pipeline.commitTitle || ''}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-slate-400">—</span>
+                )}
               </td>
               <td className="py-2.5 px-3.5 whitespace-nowrap text-slate-600">
                 <Tooltip content={formatDateTime(pipeline.startedAt)}>

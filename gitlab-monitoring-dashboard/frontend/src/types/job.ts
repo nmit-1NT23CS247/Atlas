@@ -15,6 +15,8 @@ export type StageName =
   | 'package'
   | 'deploy';
 
+import { Pipeline } from './pipeline';
+
 export interface Job {
   id: number;
   pipelineId: number;
@@ -25,13 +27,13 @@ export interface Job {
   status: JobStatus;
   startedAt: string;
   finishedAt: string | null;
-  durationSeconds: number;
-  runnerName?: string;
-  runnerTags?: string[];
-  failureMessage?: string;
-  failureExitCode?: number;
-  allowFailure?: boolean;
-  webUrl?: string;
+  durationSeconds: number | null;
+  runnerName?: string | null;
+  runnerTags?: string[] | null;
+  failureMessage?: string | null;
+  failureExitCode?: number | null;
+  allowFailure?: boolean | null;
+  webUrl?: string | null;
 }
 
 export interface PipelineStageGroup {
@@ -43,4 +45,8 @@ export interface PipelineStageGroup {
   passedJobs: number;
   failedJobs: number;
   durationSeconds: number;
+}
+
+export interface PipelineDetail extends Pipeline {
+  stages: PipelineStageGroup[];
 }

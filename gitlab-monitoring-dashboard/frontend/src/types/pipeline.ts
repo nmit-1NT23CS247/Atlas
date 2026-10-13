@@ -21,6 +21,8 @@ export interface PipelineUser {
   avatarUrl?: string;
 }
 
+import { Job } from './job';
+
 export interface Pipeline {
   id: number;
   projectId: string;
@@ -37,14 +39,14 @@ export interface Pipeline {
   createdAt: string;
   startedAt: string;
   finishedAt: string | null;
-  durationSeconds: number;
+  durationSeconds: number | null;
   stageCount: number;
   jobCount: number;
   failedJobCount: number;
-  webUrl?: string;
-  mergeRequestId?: number;
-  mergeRequestIid?: number;
-  coverage?: string;
+  webUrl?: string | null;
+  mergeRequestId?: number | null;
+  mergeRequestIid?: number | null;
+  coverage?: string | null;
 }
 
 export interface PipelineSummaryMetrics {
@@ -57,4 +59,36 @@ export interface PipelineSummaryMetrics {
   skipped: number;
   successRate: number;
   avgDurationSeconds: number;
+}
+
+export interface RecentPipeline {
+  id: number;
+  status: PipelineStatus;
+  projectId: string;
+  projectName: string;
+  ref: string;
+  startedAt: string;
+  durationSeconds: number | null;
+  commitSha?: string | null;
+  commitTitle?: string | null;
+}
+
+export interface RecentFailure {
+  pipeline: RecentPipeline;
+  failedJob?: Job | null;
+}
+
+export interface PaginationMetadata {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface PipelineListResponse {
+  items: Pipeline[];
+  summary: PipelineSummaryMetrics;
+  recentPipelines: RecentPipeline[];
+  recentFailures: RecentFailure[];
+  pagination: PaginationMetadata;
 }
