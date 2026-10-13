@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+.bun/
+
+# Build outputs
+dist/
+build/
+
+# Logs & caches
+*.log
+.DS_Store
+*.local
+
+# Environment variables
+.env
+.env*.local
+!.env.example

@@ -4,7 +4,6 @@ import {
   ShieldCheck,
   Rocket,
   User,
-  Clock,
   CheckCircle2,
   XCircle,
   Loader2,
@@ -12,6 +11,7 @@ import {
 import { AuditEntry } from '../../types/index.ts';
 import { TablePagination } from '../../components/ui/Table.tsx';
 import { CommitLink } from '../../components/common/CommitLink.tsx';
+import { EmptyState } from '../../components/common/EmptyState.tsx';
 import { formatRelativeTime, formatDateTime } from '../../utils/formatters.ts';
 
 export function ActivityTable({ activities }: { activities: AuditEntry[] }) {
@@ -32,7 +32,7 @@ export function ActivityTable({ activities }: { activities: AuditEntry[] }) {
         );
       case 'Promote Stable':
         return (
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8E54E9] bg-[#F4F1FA] px-2.5 py-1 rounded-full border border-[#8E54E9]/20">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7C3AED] bg-[#F4F1FA] px-2.5 py-1 rounded-full border border-[#7C3AED]/20">
             <ShieldCheck className="w-3.5 h-3.5" />
             Promote Stable
           </span>
@@ -81,7 +81,7 @@ export function ActivityTable({ activities }: { activities: AuditEntry[] }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(115,82,199,0.04)] overflow-hidden flex flex-col">
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -99,8 +99,12 @@ export function ActivityTable({ activities }: { activities: AuditEntry[] }) {
           <tbody className="divide-y divide-slate-100 text-xs">
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-slate-400">
-                  No activity log entries match the selected filters.
+                <td colSpan={8} className="p-0">
+                  <EmptyState
+                    title="No activity log entries found"
+                    description="No audit events match your active filters. Try clearing search filters or broadening your date selection."
+                    className="border-0 rounded-none py-12"
+                  />
                 </td>
               </tr>
             ) : (
@@ -146,7 +150,7 @@ export function ActivityTable({ activities }: { activities: AuditEntry[] }) {
 
                   {/* Version */}
                   <td className="py-3.5 px-4 font-mono text-[11px] whitespace-nowrap">
-                    <span className="text-[#8E54E9] bg-[#F4F1FA] px-2 py-0.5 rounded-md">
+                    <span className="text-[#7C3AED] bg-[#F4F1FA] border border-[#7C3AED]/20 px-2 py-0.5 rounded-md">
                       {entry.version}
                     </span>
                   </td>

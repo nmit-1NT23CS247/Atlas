@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { History, Search, Filter, Download } from 'lucide-react';
+import { Search, Download, X } from 'lucide-react';
 import { useDashboard } from '../../hooks/useDashboardContext.tsx';
 import { ActivityTable } from './ActivityTable.tsx';
 import { Input } from '../../components/ui/Input.tsx';
@@ -12,7 +12,7 @@ import { getBranches } from '../../services/products.ts';
 import { AuditEntry, Branch } from '../../types/index.ts';
 
 export function ActivityPage() {
-  const { products, selectedProductId, refreshTick } = useDashboard();
+  const { products, selectedProductId, refreshTick, searchQuery, setSearchQuery } = useDashboard();
 
   const [activities, setActivities] = useState<AuditEntry[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -25,7 +25,6 @@ export function ActivityPage() {
   const [actionFilter, setActionFilter] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [dateRangeFilter, setDateRangeFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Load branches
   useEffect(() => {
@@ -130,13 +129,24 @@ export function ActivityPage() {
       {/* Filter Toolbar */}
       <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-[0_2px_12px_rgba(115,82,199,0.04)] flex flex-wrap items-center justify-between gap-3">
         {/* Search */}
-        <div className="w-full sm:w-72">
+        <div className="w-full sm:w-72 relative flex items-center">
           <Input
             placeholder="Search by user, commit, version..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             leftIcon={<Search className="w-4 h-4" />}
+            className={searchQuery ? 'pr-8' : ''}
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer transition-colors z-10"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Filter dropdowns */}

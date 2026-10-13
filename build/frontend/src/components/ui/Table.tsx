@@ -55,17 +55,3 @@ export function TablePagination({
     </div>
   );
 }
-
-export function TableContainer({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={`w-full overflow-x-auto relative rounded-2xl bg-white border border-slate-100 shadow-[0_2px_12px_rgba(115,82,199,0.04)] ${className}`}>
-      {children}
-    </div>
-  );
-}

@@ -7,7 +7,6 @@ import {
   XCircle,
   Loader2,
   Clock,
-  Sparkles,
 } from 'lucide-react';
 import { ReleaseRecord, PipelineStatus, SigningStatus, RepackagingStatus } from '../../types/index.ts';
 
@@ -64,7 +63,7 @@ export function ReleaseStepper({ release }: { release: ReleaseRecord }) {
       id: 'release-ready',
       name: 'Release Ready',
       status: releaseReadyStatus,
-      icon: <Sparkles className="w-4 h-4" />,
+      icon: <CheckCircle2 className="w-4 h-4" />,
     },
   ];
 

@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import {
-  Rocket,
   RefreshCw,
-  AlertTriangle,
   User,
-  Clock,
   CheckCircle2,
-  XCircle,
-  Loader2,
 } from 'lucide-react';
 import { ReleaseRecord } from '../../types/index.ts';
 import { Button } from '../../components/ui/Button.tsx';
 import { TablePagination } from '../../components/ui/Table.tsx';
+import { EmptyState } from '../../components/common/EmptyState.tsx';
 import {
   PipelineStatusBadge,
   StepStatusBadge,
@@ -45,18 +41,18 @@ export function ReleasesTable({ releases, onRetry }: ReleasesTableProps) {
   const roleReason = getRolePermissionReason('release');
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(115,82,199,0.04)] overflow-hidden flex flex-col">
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col">
       <div className="p-4 border-b border-slate-100 flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-slate-800">
-            Release Build Pipeline Runs
+            Completed & Historical Releases
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Stage progression for official production releases, signing, and repackaging
+            Audit history of completed production releases, signing artifacts, and packaging distributions
           </p>
         </div>
         <span className="text-xs font-semibold text-slate-400 tabular-nums">
-          {releases.length} Total Releases
+          {releases.length} Completed Releases
         </span>
       </div>
 
@@ -77,8 +73,12 @@ export function ReleasesTable({ releases, onRetry }: ReleasesTableProps) {
           <tbody className="divide-y divide-slate-100 text-xs">
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-slate-400">
-                  No releases created yet.
+                <td colSpan={8} className="p-0">
+                  <EmptyState
+                    title="No completed releases"
+                    description="No completed or historical release pipelines are recorded for this product."
+                    className="border-0 rounded-none py-12"
+                  />
                 </td>
               </tr>
             ) : (
@@ -101,7 +101,7 @@ export function ReleasesTable({ releases, onRetry }: ReleasesTableProps) {
                   <tr key={rel.id} className="hover:bg-slate-50/70 transition-colors">
                     {/* Version */}
                     <td className="py-3.5 px-4 font-mono font-bold text-slate-900 whitespace-nowrap">
-                      <span className="text-[#8E54E9] bg-[#F4F1FA] px-2.5 py-1 rounded-md">
+                      <span className="text-[#7C3AED] bg-[#F4F1FA] border border-[#7C3AED]/20 px-2.5 py-1 rounded-md">
                         {rel.version}
                       </span>
                     </td>
@@ -149,10 +149,12 @@ export function ReleasesTable({ releases, onRetry }: ReleasesTableProps) {
                       {hasFailedStep && rel.errorMessage ? (
                         <div className="flex flex-col items-end gap-1.5">
                           <div
-                            className="max-w-[200px] text-[11px] text-rose-600 truncate font-mono"
+                            className="max-w-[240px] text-[11px] text-rose-700 truncate font-medium text-right"
                             title={rel.errorMessage}
                           >
-                            {rel.errorMessage}
+                            {rel.errorMessage.includes('checksum mismatch')
+                              ? 'RPM checksum mismatch'
+                              : rel.errorMessage}
                           </div>
                           {rel.retryAllowed && failedStepName && (
                             <Button

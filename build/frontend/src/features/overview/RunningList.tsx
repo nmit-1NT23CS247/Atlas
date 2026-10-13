@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { PlayCircle, Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight } from 'lucide-react';
 import { CommitLink, PipelineLink } from '../../components/common/CommitLink.tsx';
 import { formatRelativeTime } from '../../utils/formatters.ts';
 

@@ -27,7 +27,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 select-none focus:outline-none focus:ring-2 focus:ring-[#8E54E9]/30 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer';
+      'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 select-none focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer';
 
     const sizeStyles = {
       sm: 'text-xs px-3 py-1.5 gap-1.5 h-8',
@@ -37,9 +37,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        'bg-gradient-to-r from-[#8E54E9] to-[#B66DFF] text-white shadow-sm hover:opacity-95 hover:shadow active:scale-[0.99] border-0',
+        'bg-[#7C3AED] hover:bg-[#6D28D9] text-white shadow-xs active:scale-[0.99] border-0 font-semibold',
       secondary:
-        'bg-[#F4F1FA] text-slate-700 hover:bg-[#EBE5F7] border border-slate-200/60 active:scale-[0.99]',
+        'bg-[#F4F1FA] text-slate-700 hover:bg-[#EBE5F7] border border-slate-200/80 active:scale-[0.99]',
       outline:
         'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 active:scale-[0.99]',
       danger:

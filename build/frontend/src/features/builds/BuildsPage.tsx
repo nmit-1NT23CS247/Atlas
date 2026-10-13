@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GitBranch, RefreshCw, AlertCircle } from 'lucide-react';
+import { Hammer } from 'lucide-react';
 import { useDashboard } from '../../hooks/useDashboardContext.tsx';
 import { BranchSelectorPanel } from './BranchSelectorPanel.tsx';
 import { CommitTable } from './CommitTable.tsx';
 import { TriggerBuildModal } from './TriggerBuildModal.tsx';
 import { PromoteStableModal } from './PromoteStableModal.tsx';
+import { Button } from '../../components/ui/Button.tsx';
 import { TableSkeletonRows } from '../../components/ui/Skeleton.tsx';
 import { ErrorBanner } from '../../components/common/ErrorBanner.tsx';
 import { getBranches } from '../../services/products.ts';
@@ -15,7 +16,15 @@ import { Branch, Commit, PipelineStatus, Tag } from '../../types/index.ts';
 
 export function BuildsPage() {
   const navigate = useNavigate();
-  const { currentProduct, selectedProductId, refreshTick, triggerRefresh, role } = useDashboard();
+  const {
+    currentProduct,
+    selectedProductId,
+    refreshTick,
+    triggerRefresh,
+    role,
+    searchQuery,
+    setSearchQuery,
+  } = useDashboard();
 
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<string>('main');
@@ -25,7 +34,6 @@ export function BuildsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Filters
-  const [searchFilter, setSearchFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<PipelineStatus | 'All'>('All');
   const [tagFilter, setTagFilter] = useState<Tag | 'All'>('All');
   const [dateRangeFilter, setDateRangeFilter] = useState<string>('all');
@@ -71,7 +79,7 @@ export function BuildsPage() {
     if (!selectedProductId || !selectedBranch) return;
     try {
       setIsLoadingCommits(true);
-      const data = await getCommits(selectedProductId, selectedBranch, searchFilter, {
+      const data = await getCommits(selectedProductId, selectedBranch, searchQuery, {
         status: statusFilter,
         tag: tagFilter,
         dateRange: dateRangeFilter,
@@ -82,7 +90,7 @@ export function BuildsPage() {
     } finally {
       setIsLoadingCommits(false);
     }
-  }, [selectedProductId, selectedBranch, searchFilter, statusFilter, tagFilter, dateRangeFilter]);
+  }, [selectedProductId, selectedBranch, searchQuery, statusFilter, tagFilter, dateRangeFilter]);
 
   useEffect(() => {
     fetchCommits();
@@ -111,16 +119,40 @@ export function BuildsPage() {
     navigate('/releases', { state: { sourceBuildId: commit.buildId } });
   };
 
+  // Find latest commit eligible for building on selected branch
+  const latestUnbuiltCommit = commits.find((c) => !c.buildId);
+
   return (
     <div className="space-y-6">
-      {/* Header bar */}
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-          Build Management & Commit Pipelines
-        </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Pick a branch, inspect commits, trigger builds, and validate CI test gates
-        </p>
+      {/* Header bar with primary action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+            Build Management & Commit Pipelines
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Pick a branch, inspect commits, trigger builds, and validate CI test gates
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={!latestUnbuiltCommit}
+            tooltip={
+              latestUnbuiltCommit
+                ? `Trigger fresh build for latest unbuilt commit (${latestUnbuiltCommit.shortSha})`
+                : `All commits on ${selectedBranch} already have builds triggered`
+            }
+            onClick={() => {
+              if (latestUnbuiltCommit) setBuildModalCommit(latestUnbuiltCommit);
+            }}
+            leftIcon={<Hammer className="w-3.5 h-3.5" />}
+          >
+            Trigger Build on {selectedBranch}
+          </Button>
+        </div>
       </div>
 
       {error && <ErrorBanner message={error} onRetry={fetchCommits} />}
@@ -149,8 +181,8 @@ export function BuildsPage() {
               onTriggerBuild={(c) => setBuildModalCommit(c)}
               onPromoteStable={(c) => setPromoteModalCommit(c)}
               onCreateRelease={handleCreateRelease}
-              searchFilter={searchFilter}
-              onSearchChange={setSearchFilter}
+              searchFilter={searchQuery}
+              onSearchChange={setSearchQuery}
               statusFilter={statusFilter}
               onStatusFilterChange={setStatusFilter}
               tagFilter={tagFilter}

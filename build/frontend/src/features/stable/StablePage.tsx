@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Plus, GitBranch, AlertCircle, Info } from 'lucide-react';
+import { ShieldCheck, Plus, GitBranch } from 'lucide-react';
 import { useDashboard } from '../../hooks/useDashboardContext.tsx';
 import { StableCard } from './StableCard.tsx';
 import { StableHistoryTable } from './StableHistoryTable.tsx';
@@ -24,8 +24,6 @@ export function StablePage() {
 
   // Quick promote modal state
   const [isPromoteModalOpen, setIsPromoteModalOpen] = useState<boolean>(false);
-  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState<boolean>(false);
-  const [candidateCommit, setCandidateCommit] = useState<Commit | null>(null);
   const [availableCandidates, setAvailableCandidates] = useState<Commit[]>([]);
 
   useEffect(() => {
@@ -58,9 +56,6 @@ export function StablePage() {
           allCandidates.push(...eligible);
         }
         setAvailableCandidates(allCandidates);
-        if (allCandidates.length > 0) {
-          setCandidateCommit(allCandidates[0]);
-        }
       } catch (err: any) {
         if (isMounted) setError(err?.message || 'Failed to fetch stable builds data');
       } finally {
@@ -115,15 +110,14 @@ export function StablePage() {
       {error && <ErrorBanner message={error} />}
 
       {/* Info notice about promotion criteria */}
-      <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-[0_2px_12px_rgba(115,82,199,0.04)] flex items-start gap-3 text-xs text-slate-600">
-        <Info className="w-5 h-5 text-[#8E54E9] shrink-0 mt-0.5" />
+      <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex items-start gap-3 text-xs text-slate-600">
+        <ShieldCheck className="w-5 h-5 text-[#7C3AED] shrink-0 mt-0.5" />
         <div className="leading-relaxed">
-          <strong className="text-slate-800 font-semibold block mb-0.5">
-            GitLab CI/CD Automated Baseline Gate
+          <strong className="text-slate-900 font-semibold block mb-0.5">
+            Automated Quality Gate Certification
           </strong>
-          Promoting a build to Stable requires mandatory verification: all 14 integration test
-          matrix jobs must succeed, security SAST/DAST checks must be clean, and container
-          checksums must be cataloged in the GitLab package registry.
+          Promoting a build to Stable requires verified passage of 14 matrix integration tests,
+          clean SAST/DAST security scans, and cataloged package checksums.
         </div>
       </div>
 
@@ -175,7 +169,7 @@ export function StablePage() {
                 return (
                   <div
                     key={branch.id}
-                    className="p-5 rounded-2xl bg-[#F4F1FA]/60 border border-slate-200/50 space-y-3"
+                    className="p-5 rounded-2xl bg-slate-50/60 border border-slate-200/80 space-y-3"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -216,68 +210,11 @@ export function StablePage() {
         <StableHistoryTable records={stableRecords} />
       </div>
 
-      {/* Candidate Selector Modal before Promotion Checklist */}
-      {isPromoteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
-            onClick={() => setIsPromoteModalOpen(false)}
-          />
-          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-6 z-10 space-y-4">
-            <h3 className="text-base font-semibold text-slate-900">
-              Select Build Candidate to Promote
-            </h3>
-            <p className="text-xs text-slate-500">
-              Only builds with successful pipelines that are not currently stable can be promoted.
-            </p>
-
-            <div className="space-y-3">
-              <label className="text-xs font-medium text-slate-700 block">
-                Candidate Build
-              </label>
-              <Select
-                value={candidateCommit?.sha || ''}
-                onChange={(e) => {
-                  const found = availableCandidates.find((c) => c.sha === e.target.value);
-                  if (found) setCandidateCommit(found);
-                }}
-              >
-                {availableCandidates.map((c) => (
-                  <option key={c.sha} value={c.sha}>
-                    [{c.branch}] {c.version || c.shortSha} — {c.authorName}
-                  </option>
-                ))}
-              </Select>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsPromoteModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  setIsPromoteModalOpen(false);
-                  setIsVerificationModalOpen(true);
-                }}
-              >
-                Proceed to Verification
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Promote Stable Checklist Dialog */}
       <PromoteStableModal
-        isOpen={isVerificationModalOpen}
-        onClose={() => setIsVerificationModalOpen(false)}
-        commit={candidateCommit}
+        isOpen={isPromoteModalOpen}
+        onClose={() => setIsPromoteModalOpen(false)}
+        candidateCommits={availableCandidates}
         onPromoted={handlePromoteSuccess}
       />
     </div>

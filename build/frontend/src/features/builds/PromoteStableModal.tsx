@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Dialog } from '../../components/ui/Dialog.tsx';
 import { Button } from '../../components/ui/Button.tsx';
+import { Select } from '../../components/ui/Select.tsx';
 import { Commit, EligibilityCheck } from '../../types/index.ts';
 import { getStableEligibility, promoteStable } from '../../services/stable.ts';
 import { useDashboard } from '../../hooks/useDashboardContext.tsx';
@@ -19,31 +20,51 @@ import { shortenSha } from '../../utils/formatters.ts';
 export interface PromoteStableModalProps {
   isOpen: boolean;
   onClose: () => void;
-  commit: Commit | null;
+  commit?: Commit | null;
+  candidateCommits?: Commit[];
   onPromoted: () => void;
 }
 
 export function PromoteStableModal({
   isOpen,
   onClose,
-  commit,
+  commit = null,
+  candidateCommits,
   onPromoted,
 }: PromoteStableModalProps) {
   const { currentProduct, role } = useDashboard();
+  const [selectedCommit, setSelectedCommit] = useState<Commit | null>(commit);
   const [isLoadingChecklist, setIsLoadingChecklist] = useState<boolean>(true);
   const [checklist, setChecklist] = useState<EligibilityCheck[]>([]);
   const [isEligible, setIsEligible] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [backendError, setBackendError] = useState<string | null>(null);
 
+  // Sync selectedCommit when modal opens or commit/candidateCommits changes
+  useEffect(() => {
+    if (commit) {
+      setSelectedCommit(commit);
+    } else if (candidateCommits && candidateCommits.length > 0) {
+      setSelectedCommit(candidateCommits[0]);
+    } else {
+      setSelectedCommit(null);
+    }
+  }, [commit, candidateCommits, isOpen]);
+
+  // Evaluate eligibility whenever selectedCommit changes while open
   useEffect(() => {
     let isMounted = true;
     async function evaluate() {
-      if (!commit?.buildId) return;
+      if (!selectedCommit?.buildId) {
+        setIsLoadingChecklist(false);
+        setChecklist([]);
+        setIsEligible(false);
+        return;
+      }
       try {
         setIsLoadingChecklist(true);
         setBackendError(null);
-        const res = await getStableEligibility(commit.buildId);
+        const res = await getStableEligibility(selectedCommit.buildId);
         if (isMounted) {
           setChecklist(res.checks);
           setIsEligible(res.eligible);
@@ -57,24 +78,22 @@ export function PromoteStableModal({
       }
     }
 
-    if (isOpen && commit) {
+    if (isOpen && selectedCommit) {
       evaluate();
     }
     return () => {
       isMounted = false;
     };
-  }, [isOpen, commit]);
-
-  if (!commit) return null;
+  }, [isOpen, selectedCommit]);
 
   const handleConfirmPromotion = async () => {
-    if (!commit.buildId) return;
+    if (!selectedCommit?.buildId) return;
     try {
       setIsSubmitting(true);
       setBackendError(null);
 
       // Call promotion API
-      await promoteStable(commit.buildId, `${role} Operator`);
+      await promoteStable(selectedCommit.buildId, `${role} Operator`);
       onPromoted();
       onClose();
     } catch (err: any) {
@@ -85,7 +104,17 @@ export function PromoteStableModal({
     }
   };
 
-  const allPassed = isEligible && checklist.length > 0 && checklist.every((c) => c.passed);
+  const allPassed = Boolean(
+    isEligible &&
+    checklist.length > 0 &&
+    checklist.every((c) => c.passed) &&
+    selectedCommit?.buildId
+  );
+
+  if (!isOpen) return null;
+
+  const showCandidatePicker = Boolean(candidateCommits && candidateCommits.length > 0 && !commit);
+  const hasCandidates = Boolean(selectedCommit || (candidateCommits && candidateCommits.length > 0));
 
   return (
     <Dialog
@@ -102,7 +131,7 @@ export function PromoteStableModal({
           <Button
             variant="primary"
             size="sm"
-            disabled={!allPassed || isSubmitting}
+            disabled={!allPassed || isSubmitting || !hasCandidates}
             isLoading={isSubmitting}
             onClick={handleConfirmPromotion}
             leftIcon={<ShieldCheck className="w-3.5 h-3.5" />}
@@ -125,27 +154,60 @@ export function PromoteStableModal({
           </div>
         )}
 
-        {/* Target Meta */}
-        <div className="p-3.5 rounded-xl bg-[#F4F1FA] border border-[#8E54E9]/20 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <Layers className="w-3.5 h-3.5 text-[#8E54E9]" />
-            <span className="font-medium text-slate-600">Product:</span>
-            <strong className="text-slate-800">{currentProduct?.code}</strong>
+        {/* Candidate Selector (if opened from Stable page with candidate list) */}
+        {showCandidatePicker && candidateCommits && (
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-2">
+            <label className="text-xs font-semibold text-slate-700 block">
+              Select Build Candidate to Promote
+            </label>
+            <Select
+              value={selectedCommit?.sha || ''}
+              onChange={(e) => {
+                const found = candidateCommits.find((c) => c.sha === e.target.value);
+                if (found) setSelectedCommit(found);
+              }}
+              title="Select Candidate Build"
+            >
+              {candidateCommits.map((c) => (
+                <option key={c.sha} value={c.sha}>
+                  [{c.branch}] {c.version || shortenSha(c.sha)} — {c.authorName} ({shortenSha(c.sha)})
+                </option>
+              ))}
+            </Select>
+            <p className="text-[11px] text-slate-500">
+              Only builds with successful CI pipelines not currently marked as Stable can be evaluated.
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <GitBranch className="w-3.5 h-3.5 text-[#8E54E9]" />
-            <span className="font-medium text-slate-600">Branch:</span>
-            <strong className="text-slate-800 font-mono">{commit.branch}</strong>
+        )}
+
+        {/* No Candidates Fallback */}
+        {!hasCandidates ? (
+          <div className="py-8 text-center text-xs text-slate-400">
+            No builds currently qualify for Stable promotion on this product. (Requires pipeline status Success).
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-slate-600">Version:</span>
-            <strong className="text-[#8E54E9] font-mono">{commit.version || 'Pending'}</strong>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-slate-600">SHA:</span>
-            <strong className="font-mono">{shortenSha(commit.sha)}</strong>
-          </div>
-        </div>
+        ) : selectedCommit ? (
+          <>
+            {/* Target Meta */}
+            <div className="p-3.5 rounded-xl bg-[#F4F1FA] border border-[#7C3AED]/20 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <Layers className="w-3.5 h-3.5 text-[#7C3AED]" />
+                <span className="font-medium text-slate-600">Product:</span>
+                <strong className="text-slate-800">{currentProduct?.code}</strong>
+              </div>
+              <div className="flex items-center gap-2">
+                <GitBranch className="w-3.5 h-3.5 text-[#7C3AED]" />
+                <span className="font-medium text-slate-600">Branch:</span>
+                <strong className="text-slate-800 font-mono">{selectedCommit.branch}</strong>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-slate-600">Version:</span>
+                <strong className="text-[#7C3AED] font-mono">{selectedCommit.version || 'Pending'}</strong>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-slate-600">SHA:</span>
+                <strong className="font-mono">{shortenSha(selectedCommit.sha)}</strong>
+              </div>
+            </div>
 
         {/* Eligibility Checklist */}
         <div>
@@ -155,7 +217,7 @@ export function PromoteStableModal({
 
           {isLoadingChecklist ? (
             <div className="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
-              <Loader2 className="w-6 h-6 animate-spin text-[#8E54E9]" />
+              <Loader2 className="w-6 h-6 animate-spin text-[#7C3AED]" />
               <span className="text-xs">Evaluating policy invariants & pipeline test reports...</span>
             </div>
           ) : (
@@ -241,6 +303,8 @@ export function PromoteStableModal({
             to the server. (Mock mode simulates this transition for review).
           </p>
         </div>
+          </>
+        ) : null}
       </div>
     </Dialog>
   );

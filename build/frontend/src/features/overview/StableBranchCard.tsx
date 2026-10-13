@@ -12,61 +12,55 @@ export function StableBranchCard({
   stableRecord?: StableRecord;
 }) {
   return (
-    <div className="p-5 rounded-2xl bg-white border border-slate-100 shadow-[0_2px_12px_rgba(115,82,199,0.04)] flex flex-col justify-between hover:border-[#8E54E9]/30 transition-all duration-150">
-      <div>
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-[#F4F1FA] text-[#8E54E9]">
-              <GitBranch className="w-4 h-4" />
-            </div>
-            <span className="font-semibold text-sm text-slate-800">{branchName}</span>
-          </div>
-
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#8E54E9] bg-[#F4F1FA] px-2.5 py-0.5 rounded-full">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Current Stable
-          </span>
+    <div className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-xs hover:border-[#7C3AED]/30 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="p-2 rounded-lg bg-[#F4F1FA] text-[#7C3AED] shrink-0">
+          <GitBranch className="w-4 h-4" />
         </div>
-
-        {stableRecord ? (
-          <div className="space-y-3">
-            <div>
-              <div className="text-xs text-slate-400 font-medium">Version</div>
-              <div className="text-sm font-bold text-slate-900 font-mono mt-0.5 truncate">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-slate-900 text-xs">{branchName}</span>
+            {stableRecord && (
+              <span className="font-mono text-[#7C3AED] bg-[#F4F1FA] border border-[#7C3AED]/20 px-2 py-0.5 rounded text-[11px] font-bold">
                 {stableRecord.version}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
-              <div>
-                <span className="text-slate-400 block text-[11px]">Commit</span>
-                <CommitLink sha={stableRecord.commitSha} />
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[11px]">Promoted By</span>
-                <span className="font-medium text-slate-700 flex items-center gap-1 mt-0.5 truncate">
-                  <User className="w-3 h-3 text-slate-400 shrink-0" />
-                  {stableRecord.promotedBy}
-                </span>
-              </div>
-            </div>
+              </span>
+            )}
           </div>
-        ) : (
-          <div className="py-6 text-center text-xs text-slate-400">
-            No stable promotion recorded for this branch yet
-          </div>
-        )}
+          {stableRecord ? (
+            <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500 flex-wrap">
+              <span>Commit:</span>
+              <CommitLink sha={stableRecord.commitSha} />
+              <span>·</span>
+              <span className="flex items-center gap-1 text-slate-600">
+                <User className="w-3 h-3 text-slate-400 shrink-0" />
+                {stableRecord.promotedBy}
+              </span>
+              <span>·</span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3 shrink-0" />
+                Promoted {formatRelativeTime(stableRecord.promotedAt)}
+              </span>
+            </div>
+          ) : (
+            <span className="text-[11px] text-slate-400 mt-0.5 block">
+              No certified stable baseline currently recorded on this branch
+            </span>
+          )}
+        </div>
       </div>
 
-      {stableRecord && (
-        <div className="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-          <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            Promoted {formatRelativeTime(stableRecord.promotedAt)}
+      <div className="shrink-0 self-end sm:self-center">
+        {stableRecord ? (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            Gate Verified Baseline
           </span>
-          <span className="text-emerald-600 font-medium">Gate Verified</span>
-        </div>
-      )}
+        ) : (
+          <span className="text-[11px] text-slate-400 font-medium bg-slate-50 border border-slate-200 px-2.5 py-0.5 rounded-full">
+            No Baseline
+          </span>
+        )}
+      </div>
     </div>
   );
 }

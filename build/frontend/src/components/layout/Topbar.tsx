@@ -5,6 +5,7 @@ import {
   UserCheck,
   Info,
   ExternalLink,
+  X,
 } from 'lucide-react';
 import { useDashboard } from '../../hooks/useDashboardContext.tsx';
 import { LastRefreshed } from '../common/LastRefreshed.tsx';
@@ -29,7 +30,7 @@ export function Topbar() {
       {/* Left Zone: Product Selector & Breadcrumb */}
       <div className="flex items-center gap-4 min-w-0">
         <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-[#8E54E9] shrink-0" />
+          <Layers className="w-4 h-4 text-[#7C3AED] shrink-0" />
           <div className="relative">
             <select
               value={selectedProductId}
@@ -51,7 +52,7 @@ export function Topbar() {
             href={currentProduct.gitlabUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden lg:inline-flex items-center gap-1 text-xs text-slate-400 hover:text-[#8E54E9] transition-colors"
+            className="hidden lg:inline-flex items-center gap-1 text-xs text-slate-400 hover:text-[#7C3AED] transition-colors"
             title="View product project on GitLab"
           >
             <span>Repository</span>
@@ -69,8 +70,20 @@ export function Topbar() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search commits, versions, SHA, or authors..."
-            className="w-full h-9 pl-9 pr-4 text-xs rounded-xl bg-[#F4F1FA]/70 border border-transparent focus:border-[#8E54E9]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8E54E9]/10 transition-all text-slate-800 placeholder:text-slate-400"
+            className={`w-full h-9 pl-9 text-xs rounded-xl bg-[#F4F1FA]/70 border border-transparent focus:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/10 transition-all text-slate-800 placeholder:text-slate-400 ${
+              searchQuery ? 'pr-8' : 'pr-4'
+            }`}
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer transition-colors"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -85,7 +98,7 @@ export function Topbar() {
         */}
         <div className="flex items-center gap-1.5 pl-2 border-l border-slate-100">
           <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-[#F4F1FA] px-2.5 py-1 rounded-lg">
-            <UserCheck className="w-3.5 h-3.5 text-[#8E54E9]" />
+            <UserCheck className="w-3.5 h-3.5 text-[#7C3AED]" />
             <span className="text-slate-400">Demo role:</span>
             <select
               value={role}

@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Hammer,
   ShieldCheck,
   Rocket,
   Search,
-  Filter,
   User,
-  Clock,
-  Sparkles,
+  X,
 } from 'lucide-react';
 import { Commit, PipelineStatus, Tag } from '../../types/index.ts';
 import { Button } from '../../components/ui/Button.tsx';
@@ -19,6 +17,7 @@ import {
   TagBadge,
 } from '../../components/common/StatusBadge.tsx';
 import { CommitLink, PipelineLink } from '../../components/common/CommitLink.tsx';
+import { EmptyState } from '../../components/common/EmptyState.tsx';
 import { formatRelativeTime, formatDateTime } from '../../utils/formatters.ts';
 import { useDashboard } from '../../hooks/useDashboardContext.tsx';
 
@@ -55,20 +54,32 @@ export function CommitTable({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
 
+  // Reset to page 1 whenever search or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchFilter, statusFilter, tagFilter, dateRangeFilter]);
+
   // Pagination slice
   const totalPages = Math.ceil(commits.length / pageSize);
   const paginatedCommits = commits.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Check action enablement and tooltip reasons
   const getBuildActionState = (commit: Commit) => {
-    // Enabled only if commit has NO build yet
+    if (commit.pipelineStatus === 'Failed') {
+      return {
+        enabled: true,
+        label: 'Rebuild',
+        reason: 'Re-trigger build after previous pipeline test failure',
+      };
+    }
     if (commit.buildId) {
       return {
         enabled: false,
+        label: 'Build',
         reason: `Build already triggered (${commit.pipelineStatus || 'In Progress'})`,
       };
     }
-    return { enabled: true, reason: 'Trigger a fresh CI build from this commit' };
+    return { enabled: true, label: 'Build', reason: 'Trigger a fresh CI build from this commit' };
   };
 
   const getPromoteActionState = (commit: Commit) => {
@@ -110,16 +121,26 @@ export function CommitTable({
       {/* Table Filter Bar */}
       <div className="p-4 border-b border-slate-100 bg-slate-50/40 flex flex-wrap items-center justify-between gap-3">
         {/* Left: Search input */}
-        <div className="w-full sm:w-72">
+        <div className="w-full sm:w-72 relative flex items-center">
           <Input
             placeholder="Filter commits by SHA, message, author..."
             value={searchFilter}
             onChange={(e) => {
               onSearchChange(e.target.value);
-              setCurrentPage(1);
             }}
             leftIcon={<Search className="w-4 h-4" />}
+            className={searchFilter ? 'pr-8' : ''}
           />
+          {searchFilter && (
+            <button
+              type="button"
+              onClick={() => onSearchChange('')}
+              className="absolute right-2.5 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer transition-colors z-10"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Right: Filter Dropdowns */}
@@ -197,8 +218,47 @@ export function CommitTable({
           <tbody className="divide-y divide-slate-100 text-xs">
             {paginatedCommits.length === 0 ? (
               <tr>
-                <td colSpan={9} className="py-12 text-center text-slate-400">
-                  No matching commits found for current filters.
+                <td colSpan={9} className="p-0">
+                  <EmptyState
+                    title={
+                      searchFilter.trim() ||
+                      statusFilter !== 'All' ||
+                      tagFilter !== 'All' ||
+                      dateRangeFilter !== 'all'
+                        ? 'No matching commits found'
+                        : 'No commits on this branch'
+                    }
+                    description={
+                      searchFilter.trim() ||
+                      statusFilter !== 'All' ||
+                      tagFilter !== 'All' ||
+                      dateRangeFilter !== 'all'
+                        ? 'No commits match your active search and filter criteria. Try adjusting or clearing your filters.'
+                        : 'There are no commit records available for the selected branch.'
+                    }
+                    actionLabel={
+                      searchFilter.trim() ||
+                      statusFilter !== 'All' ||
+                      tagFilter !== 'All' ||
+                      dateRangeFilter !== 'all'
+                        ? 'Clear Filters'
+                        : undefined
+                    }
+                    onAction={
+                      searchFilter.trim() ||
+                      statusFilter !== 'All' ||
+                      tagFilter !== 'All' ||
+                      dateRangeFilter !== 'all'
+                        ? () => {
+                            onSearchChange('');
+                            onStatusFilterChange('All');
+                            onTagFilterChange('All');
+                            onDateRangeChange('all');
+                          }
+                        : undefined
+                    }
+                    className="border-0 rounded-none py-12"
+                  />
                 </td>
               </tr>
             ) : (
@@ -246,14 +306,14 @@ export function CommitTable({
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       {commit.version ? (
                         <div className="flex flex-col gap-0.5">
-                          <span className="font-mono text-[11px] text-[#8E54E9] font-semibold bg-[#F4F1FA] px-2 py-0.5 rounded-md inline-block max-w-fit">
+                          <span className="font-mono text-[11px] text-[#7C3AED] font-semibold bg-[#F4F1FA] border border-[#7C3AED]/20 px-2 py-0.5 rounded-md inline-block max-w-fit">
                             {commit.version}
                           </span>
                           {(commit.signingStatus || commit.repackagingStatus) && (
                             <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-sans">
                               {commit.signingStatus && (
                                 <span title={`Code Signing: ${commit.signingStatus}`}>
-                                  Signing:{' '}
+                                  Sign:{' '}
                                   <strong
                                     className={
                                       commit.signingStatus === 'Success'
@@ -270,7 +330,7 @@ export function CommitTable({
                               {commit.signingStatus && commit.repackagingStatus && <span>·</span>}
                               {commit.repackagingStatus && (
                                 <span title={`Repackaging: ${commit.repackagingStatus}`}>
-                                  Packaging:{' '}
+                                  Pkg:{' '}
                                   <strong
                                     className={
                                       commit.repackagingStatus === 'Success'
@@ -322,7 +382,7 @@ export function CommitTable({
                       <div className="inline-flex items-center gap-1.5 justify-end">
                         {/* Build Button */}
                         <Button
-                          variant="secondary"
+                          variant={buildState.label === 'Rebuild' ? 'danger' : 'secondary'}
                           size="sm"
                           disabled={!buildState.enabled}
                           tooltip={buildState.reason}
@@ -330,7 +390,7 @@ export function CommitTable({
                           leftIcon={<Hammer className="w-3 h-3 text-slate-600" />}
                           className="text-[11px] h-7 px-2.5"
                         >
-                          Build
+                          {buildState.label}
                         </Button>
 
                         {/* Promote Stable Button */}
@@ -340,8 +400,12 @@ export function CommitTable({
                           disabled={!promoteState.enabled}
                           tooltip={promoteState.reason}
                           onClick={() => onPromoteStable(commit)}
-                          leftIcon={<ShieldCheck className="w-3 h-3 text-[#8E54E9]" />}
-                          className="text-[11px] h-7 px-2.5 text-[#8E54E9] hover:bg-[#F4F1FA] hover:border-[#8E54E9]/30"
+                          leftIcon={<ShieldCheck className="w-3 h-3 text-[#7C3AED]" />}
+                          className={`text-[11px] h-7 px-2.5 ${
+                            promoteState.enabled
+                              ? 'text-[#7C3AED] bg-[#F4F1FA] border-[#7C3AED]/30 font-semibold hover:bg-[#EBE5F7]'
+                              : 'text-slate-400'
+                          }`}
                         >
                           Promote
                         </Button>

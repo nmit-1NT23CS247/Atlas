@@ -6,7 +6,7 @@ export interface SummaryCardProps {
   value: number | string;
   subtitle: string;
   icon: LucideIcon;
-  variant: 'orange-pink' | 'blue-cyan' | 'teal-green';
+  variant?: 'primary' | 'info' | 'success' | 'warning' | 'orange-pink' | 'blue-cyan' | 'teal-green' | 'default';
 }
 
 export function SummaryCard({
@@ -14,37 +14,40 @@ export function SummaryCard({
   value,
   subtitle,
   icon: Icon,
-  variant,
+  variant = 'default',
 }: SummaryCardProps) {
-  const gradientStyles = {
-    'orange-pink': 'from-[#FF5E62] to-[#FF9966]',
-    'blue-cyan': 'from-[#2563EB] to-[#06B6D4]',
-    'teal-green': 'from-[#0D9488] to-[#10B981]',
+  // Restrained semantic accent styling for the icon badge
+  const badgeStyles: Record<string, string> = {
+    primary: 'bg-[#F4F1FA] text-[#7C3AED] border border-[#7C3AED]/20',
+    info: 'bg-blue-50 text-blue-700 border border-blue-200/60',
+    success: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+    warning: 'bg-amber-50 text-amber-700 border border-amber-200/60',
+    default: 'bg-[#F4F1FA] text-[#7C3AED] border border-[#7C3AED]/20',
+    // Backward-compatible aliases
+    'orange-pink': 'bg-amber-50 text-amber-700 border border-amber-200/60',
+    'blue-cyan': 'bg-blue-50 text-blue-700 border border-blue-200/60',
+    'teal-green': 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
   };
 
-  return (
-    <div
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradientStyles[variant]} p-6 text-white shadow-md transition-all duration-150 hover:shadow-lg`}
-    >
-      {/* Translucent circle decorations in the corner */}
-      <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-white/15 pointer-events-none" />
-      <div className="absolute right-6 -top-6 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
+  const badgeClass = badgeStyles[variant] || badgeStyles['default'];
 
-      <div className="relative z-10 flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium text-white/80 uppercase tracking-wider">
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 transition-all duration-150 hover:border-[#7C3AED]/30 hover:shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">
             {title}
           </p>
-          <div className="text-3xl font-bold mt-2 tracking-tight tabular-nums font-mono">
+          <div className="text-3xl font-bold mt-2 tracking-tight tabular-nums font-mono text-slate-900">
             {value}
           </div>
-          <p className="text-xs text-white/90 mt-2 flex items-center gap-1.5 font-medium">
+          <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5 font-medium truncate">
             <span>{subtitle}</span>
           </p>
         </div>
 
-        <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-xs text-white shadow-inner">
-          <Icon className="w-6 h-6 stroke-[2]" />
+        <div className={`p-2.5 rounded-xl shrink-0 ${badgeClass}`}>
+          <Icon className="w-5 h-5 stroke-[2]" />
         </div>
       </div>
     </div>

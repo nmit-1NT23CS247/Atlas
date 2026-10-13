@@ -4,6 +4,5 @@ export * from './Badge.tsx';
 export * from './Input.tsx';
 export * from './Select.tsx';
 export * from './Dialog.tsx';
-export * from './Tabs.tsx';
 export * from './Skeleton.tsx';
 export * from './Table.tsx';

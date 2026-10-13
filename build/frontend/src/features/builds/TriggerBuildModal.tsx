@@ -72,10 +72,10 @@ export function TriggerBuildModal({
           </div>
         )}
 
-        <div className="p-4 rounded-xl bg-[#F4F1FA] border border-[#8E54E9]/20 space-y-3">
+        <div className="p-4 rounded-xl bg-[#F4F1FA] border border-[#7C3AED]/20 space-y-3">
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-[#8E54E9]" />
+              <Layers className="w-3.5 h-3.5 text-[#7C3AED]" />
               Target Product:
             </span>
             <span className="font-semibold text-slate-800">
@@ -85,7 +85,7 @@ export function TriggerBuildModal({
 
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500 flex items-center gap-1.5">
-              <GitBranch className="w-3.5 h-3.5 text-[#8E54E9]" />
+              <GitBranch className="w-3.5 h-3.5 text-[#7C3AED]" />
               Target Branch:
             </span>
             <span className="font-semibold text-slate-800 font-mono">
@@ -95,10 +95,10 @@ export function TriggerBuildModal({
 
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500 flex items-center gap-1.5">
-              <GitCommit className="w-3.5 h-3.5 text-[#8E54E9]" />
+              <GitCommit className="w-3.5 h-3.5 text-[#7C3AED]" />
               Commit SHA:
             </span>
-            <span className="font-mono text-[#8E54E9] font-bold">
+            <span className="font-mono text-[#7C3AED] font-bold">
               {shortenSha(commit.sha)} ({commit.sha})
             </span>
           </div>

@@ -12,7 +12,7 @@ export function RecentActivityList({ activities }: { activities: AuditEntry[] })
       case 'Build':
         return <Hammer className="w-3.5 h-3.5 text-blue-500" />;
       case 'Promote Stable':
-        return <ShieldCheck className="w-3.5 h-3.5 text-[#8E54E9]" />;
+        return <ShieldCheck className="w-3.5 h-3.5 text-[#7C3AED]" />;
       case 'Release':
         return <Rocket className="w-3.5 h-3.5 text-emerald-500" />;
       default:
@@ -83,7 +83,7 @@ export function RecentActivityList({ activities }: { activities: AuditEntry[] })
       <div className="pt-2 text-right">
         <Link
           to="/activity"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-[#8E54E9] hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-[#7C3AED] hover:underline"
         >
           <span>View all activity</span>
           <ArrowRight className="w-3.5 h-3.5" />

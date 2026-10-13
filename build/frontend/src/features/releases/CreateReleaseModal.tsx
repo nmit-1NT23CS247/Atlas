@@ -108,10 +108,10 @@ export function CreateReleaseModal({
         </div>
 
         {selectedStable && (
-          <div className="p-4 rounded-xl bg-[#F4F1FA] border border-[#8E54E9]/20 space-y-2.5 text-xs">
+          <div className="p-4 rounded-xl bg-[#F4F1FA] border border-[#7C3AED]/20 space-y-2.5 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-[#8E54E9]" />
+                <Layers className="w-3.5 h-3.5 text-[#7C3AED]" />
                 Product:
               </span>
               <strong className="text-slate-800">{currentProduct?.name}</strong>
@@ -119,7 +119,7 @@ export function CreateReleaseModal({
 
             <div className="flex items-center justify-between">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <GitBranch className="w-3.5 h-3.5 text-[#8E54E9]" />
+                <GitBranch className="w-3.5 h-3.5 text-[#7C3AED]" />
                 Source Branch:
               </span>
               <strong className="text-slate-800 font-mono">{selectedStable.branch}</strong>
@@ -127,10 +127,10 @@ export function CreateReleaseModal({
 
             <div className="flex items-center justify-between">
               <span className="text-slate-500 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#8E54E9]" />
+                <ShieldCheck className="w-3.5 h-3.5 text-[#7C3AED]" />
                 Stable Version:
               </span>
-              <strong className="text-[#8E54E9] font-mono">{selectedStable.version}</strong>
+              <strong className="text-[#7C3AED] font-mono">{selectedStable.version}</strong>
             </div>
 
             <div className="flex items-center justify-between">

@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  GitBranch,
   ChevronLeft,
   ChevronRight,
   Boxes,
   Workflow,
-  Sparkles,
 } from 'lucide-react';
 import { NAVIGATION_ITEMS, APP_CONFIG } from '../../config/navigation.ts';
 
@@ -23,7 +21,7 @@ export function Sidebar() {
       {/* Brand Header */}
       <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#8E54E9] to-[#B66DFF] flex items-center justify-center text-white shadow-sm shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[#7C3AED] flex items-center justify-center text-white shadow-xs shrink-0">
             <Workflow className="w-5 h-5" />
           </div>
           {!isCollapsed && (
@@ -75,7 +73,7 @@ export function Sidebar() {
                     const active = isActive || navActive;
                     return `group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer ${
                       active
-                        ? 'bg-[#F4F1FA] text-[#8E54E9] font-semibold shadow-xs'
+                        ? 'bg-[#F4F1FA] text-[#7C3AED] font-semibold shadow-xs'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     } ${isCollapsed ? 'justify-center px-0' : ''}`;
                   }}
@@ -84,7 +82,7 @@ export function Sidebar() {
                   <Icon
                     className={`w-5 h-5 shrink-0 transition-colors ${
                       isActive
-                        ? 'text-[#8E54E9] stroke-[2.2]'
+                        ? 'text-[#7C3AED] stroke-[2.2]'
                         : 'text-slate-400 group-hover:text-slate-600 stroke-[1.75]'
                     }`}
                   />

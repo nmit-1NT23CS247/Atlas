@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Rocket, Plus, Layers, GitBranch, AlertCircle, Sparkles } from 'lucide-react';
+import { Rocket, Plus, AlertCircle } from 'lucide-react';
 import { useDashboard } from '../../hooks/useDashboardContext.tsx';
 import { ReleaseStepper } from './ReleaseStepper.tsx';
 import { ReleasesTable } from './ReleasesTable.tsx';
 import { CreateReleaseModal } from './CreateReleaseModal.tsx';
 import { Button } from '../../components/ui/Button.tsx';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card.tsx';
+import { Card } from '../../components/ui/Card.tsx';
 import { Skeleton } from '../../components/ui/Skeleton.tsx';
 import { ErrorBanner } from '../../components/common/ErrorBanner.tsx';
 import { getReleases, retryReleaseStep } from '../../services/releases.ts';
@@ -78,6 +78,14 @@ export function ReleasesPage() {
 
   const roleReason = getRolePermissionReason('release');
 
+  // Partition releases into active/in-progress vs completed/historical to prevent duplicate presentation
+  const activeReleases = releases.filter(
+    (r) => !r.completedAt && r.repackagingStatus !== 'Success'
+  );
+  const historicalReleases = releases.filter(
+    (r) => Boolean(r.completedAt) || r.repackagingStatus === 'Success'
+  );
+
   return (
     <div className="space-y-6">
       {/* Header bar */}
@@ -112,14 +120,21 @@ export function ReleasesPage() {
 
       {error && <ErrorBanner message={error} />}
 
-      {/* PRD Scope & Service Integration Notice */}
-      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 flex items-start gap-2.5">
-        <Sparkles className="w-4 h-4 text-[#8E54E9] shrink-0 mt-0.5" />
-        <div className="leading-relaxed">
-          <span className="font-semibold text-slate-800">Release Service Integration Model:</span>{' '}
-          In production, code signing and container repackaging are executed asynchronously via
-          external signing authorities and backend release-service jobs. Active pipelines displayed
-          below illustrate stage progression in mock mode.
+      {/* 4-Stage Release Workflow Guide */}
+      <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs text-slate-600">
+        <div className="flex items-center gap-2.5">
+          <Rocket className="w-4 h-4 text-[#7C3AED] shrink-0" />
+          <span className="font-semibold text-slate-800">Production Release Lifecycle:</span>
+          <span>Official distribution candidates are certified through 4 sequential stages.</span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200/60 self-start md:self-auto">
+          <span>1. Build</span>
+          <span>&rarr;</span>
+          <span>2. HSM Signing</span>
+          <span>&rarr;</span>
+          <span>3. Repackaging</span>
+          <span>&rarr;</span>
+          <span className="text-[#7C3AED] font-semibold">4. Ready</span>
         </div>
       </div>
 
@@ -127,13 +142,13 @@ export function ReleasesPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Rocket className="w-4 h-4 text-[#8E54E9]" />
+            <Rocket className="w-4 h-4 text-[#7C3AED]" />
             <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
-              Release Pipeline Stages
+              Active Release Pipelines
             </h2>
           </div>
-          <span className="text-xs text-slate-400">
-            {releases.length} Configured Releases
+          <span className="text-xs text-slate-400 tabular-nums font-medium">
+            {activeReleases.length} Active in Progress
           </span>
         </div>
 
@@ -142,13 +157,13 @@ export function ReleasesPage() {
             <Skeleton className="h-36 rounded-2xl" />
             <Skeleton className="h-36 rounded-2xl" />
           </div>
-        ) : releases.length === 0 ? (
-          <div className="p-8 text-center bg-white rounded-2xl border border-slate-100 text-xs text-slate-400">
-            No release pipelines triggered yet for {currentProduct?.name}.
+        ) : activeReleases.length === 0 ? (
+          <div className="p-8 text-center bg-white rounded-2xl border border-slate-200/80 text-xs text-slate-400 shadow-xs">
+            No active or in-progress release pipelines for {currentProduct?.name || 'this product'}.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {releases.map((rel) => {
+            {activeReleases.map((rel) => {
               const currentStageName =
                 rel.repackagingStatus === 'Running' || rel.repackagingStatus === 'Failed'
                   ? 'Repackaging'
@@ -161,10 +176,10 @@ export function ReleasesPage() {
                   : 'Pending';
 
               return (
-                <Card key={rel.id} className="p-6">
+                <Card key={rel.id} className="p-6 border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
                     <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-sm font-bold font-mono text-slate-900 bg-[#F4F1FA] text-[#8E54E9] px-3 py-1 rounded-xl">
+                      <span className="text-sm font-bold font-mono text-[#7C3AED] bg-[#F4F1FA] border border-[#7C3AED]/20 px-3 py-1 rounded-xl">
                         {rel.version}
                       </span>
                       <span className="text-xs text-slate-600 font-medium">
@@ -173,7 +188,7 @@ export function ReleasesPage() {
                       </span>
                       <span className="text-[11px] text-slate-400">·</span>
                       <span className="text-xs text-slate-500">
-                        Current Stage: <strong className="text-[#8E54E9]">{currentStageName}</strong>
+                        Current Stage: <strong className="text-[#7C3AED]">{currentStageName}</strong>
                       </span>
                     </div>
 
@@ -185,31 +200,44 @@ export function ReleasesPage() {
                   {/* Horizontal Stepper */}
                   <ReleaseStepper release={rel} />
 
-                {/* Error Banner inside card if failed */}
-                {rel.errorMessage && (
-                  <div className="mt-6 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                      <span className="font-mono">{rel.errorMessage}</span>
+                  {/* Failure Resolution Banner inside card if failed */}
+                  {rel.errorMessage && (
+                    <div className="mt-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-start gap-2.5">
+                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-semibold text-rose-900 block">
+                            Stage Failure: {currentStageName}
+                          </span>
+                          <span className="text-rose-700 leading-relaxed font-medium">
+                            {rel.errorMessage.includes('checksum mismatch')
+                              ? 'RPM package manifest verification encountered a checksum error.'
+                              : rel.errorMessage}
+                          </span>
+                          <span className="text-[11px] text-rose-600/80 font-mono block mt-0.5">
+                            {rel.errorMessage}
+                          </span>
+                        </div>
+                      </div>
+                      {rel.retryAllowed && (
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          disabled={!canCreateRelease}
+                          tooltip={roleReason || undefined}
+                          onClick={() =>
+                            handleRetry(
+                              rel.id,
+                              rel.repackagingStatus === 'Failed' ? 'repackaging' : 'signing'
+                            )
+                          }
+                          className="shrink-0"
+                        >
+                          Retry {currentStageName}
+                        </Button>
+                      )}
                     </div>
-                    {rel.retryAllowed && (
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        disabled={!canCreateRelease}
-                        tooltip={roleReason || undefined}
-                        onClick={() =>
-                          handleRetry(
-                            rel.id,
-                            rel.repackagingStatus === 'Failed' ? 'repackaging' : 'signing'
-                          )
-                        }
-                      >
-                        Retry Step
-                      </Button>
-                    )}
-                  </div>
-                )}
+                  )}
                 </Card>
               );
             })}
@@ -217,9 +245,9 @@ export function ReleasesPage() {
         )}
       </div>
 
-      {/* Releases Table */}
+      {/* Completed & Historical Releases Table */}
       <div>
-        <ReleasesTable releases={releases} onRetry={handleRetry} />
+        <ReleasesTable releases={historicalReleases} onRetry={handleRetry} />
       </div>
 
       {/* Create Release Modal */}
